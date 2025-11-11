@@ -1,0 +1,8 @@
+sounddevice==0.4.6
+numpy>=1.20.0
+soundfile>=0.10.3
+SpeechRecognition>=3.8.1
+pynput>=1.7.6
+google-api-python-client>=2.0.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=0.4.6
