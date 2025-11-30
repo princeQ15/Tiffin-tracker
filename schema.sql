@@ -8,10 +8,15 @@ CREATE TABLE IF NOT EXISTS orders (
     name TEXT NOT NULL,
     phone TEXT NOT NULL,
     meal TEXT NOT NULL,
-    quantity INTEGER NOT NULL DEFAULT 1,
+    quantity INTEGER NOT NULL,
     date TEXT NOT NULL,
+    status TEXT DEFAULT 'Order Placed',
     ip_address TEXT,
-    status TEXT DEFAULT 'pending',
+    delivery_address TEXT NOT NULL,
+    delivery_time TEXT,
+    estimated_delivery TEXT,
+    user_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id),
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
