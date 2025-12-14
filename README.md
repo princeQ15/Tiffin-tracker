@@ -1,57 +1,80 @@
 # Tiffin Tracker
 
-A modern web application for managing tiffin orders with real-time tracking and admin dashboard.
+A web application for managing tiffin orders with order status updates and basic admin functionality.
 
 ## Features
 
 - **User Authentication**
-  - Secure login/logout
-  - User registration
-  - Admin dashboard
-  - Password hashing with bcrypt
+  - User registration and login/logout
+  - Admin dashboard for managing orders
+  - Password hashing using Werkzeug's security utilities
+  - Session-based authentication using Flask's session
 
 - **Order Management**
-  - Place new orders
-  - Track order status
-  - View order history
-  - Update delivery status
+  - Place new tiffin orders
+  - View order status updates
+  - Order history for users
+  - Basic order status management
 
 - **Admin Features**
-  - View all orders
-  - Manage users
+  - View all user orders
   - Update order status
-  - Generate reports
+  - Basic user management
 
 - **Responsive Design**
-  - Mobile-friendly
-  - Clean interface
-  - Built with Tailwind CSS
+  - Mobile-friendly layout
+  - Clean and simple interface
 
 ## Tech Stack
 
 - **Backend**: Python 3.8+, Flask
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Database**: SQLite
-- **Authentication**: Session-based
-- **Styling**: Tailwind CSS
-- **Deployment**: Waitress (production WSGI server)
+- **Frontend**: HTML5, JavaScript, Tailwind CSS
+- **Database**: SQLite (file-based)
+- **Authentication**: Flask's session management
+- **Styling**: Tailwind CSS with custom components
+- **Deployment**: Flask's built-in development server
 
-## Quick Start
+## Project Structure
 
-### Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
+```text
+tiffin-tracker/
+├── app/                  # Application package
+│   ├── __init__.py      # Application factory
+│   ├── models/          # Database models
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── order.py
+│   │   └── meal.py
+│   └── routes/          # Application routes
+│       ├── __init__.py
+│       ├── auth.py      # Authentication routes
+│       └── main.py      # Main application routes
+├── static/              # Static files
+│   └── css/
+│       └── style.css    # Custom styles
+├── templates/           # HTML templates
+│   ├── base.html        # Base template
+│   ├── index.html       # Home page
+│   ├── login.html       # Login page
+│   ├── register.html    # Registration page
+│   ├── profile.html     # User profile
+│   └── admin.html       # Admin dashboard
+├── app.py               # Main application entry point
+├── config.py            # Configuration settings
+├── db_utils.py          # Database helper functions
+├── requirements.txt     # Python dependencies
+└── schema.sql           # Database schema
+```
 
-### Installation
+## Setup
 
-1. **Clone the repository**
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/tiffin-tracker.git
-   cd tiffin-tracker
+   git clone https://github.com/TusharQ15/Tiffin-tracker.git
+   cd Tiffin-tracker
+   ```
 
-### Setup & Installation
-
-1. **Create and activate a virtual environment**
+2. **Create and activate a virtual environment**:
    ```bash
    # Windows
    python -m venv venv
@@ -62,26 +85,33 @@ A modern web application for managing tiffin orders with real-time tracking and 
    source venv/bin/activate
    ```
 
-2. **Install dependencies**
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Initialize the database**
+4. **Set up the database**:
    ```bash
-   # This will create the database with all necessary tables
-   python init_db.py
+   python -c "from app import create_app; create_app().app_context().push(); from app import db; db.create_all()"
    ```
 
-4. **Run the application**
+5. **Run the application**:
    ```bash
-   # Development server
    flask run
-   
-   # Or for production
-   waitress-serve --port=5000 app:app
    ```
    The application will be available at `http://localhost:5000`
+
+### Development Credentials
+
+**⚠️ WARNING: For development use only!**
+
+```
+Default admin (development only):
+- Username: admin
+- Password: admin123
+```
+
+**Important:** Change these credentials immediately after first login in production environments.
 
 ## Screenshots
 
