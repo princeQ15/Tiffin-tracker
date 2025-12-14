@@ -94,6 +94,11 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # Commit changes and close the connection
+    conn.commit()
+    conn.close()
+    print("✅ Database initialized successfully")
 
 # Routes
 @app.route('/')
