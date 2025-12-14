@@ -59,8 +59,8 @@ def migrate_db():
                 cursor.execute(f"ALTER TABLE orders ADD COLUMN {column} TEXT")
             print(f"Added {column} column to orders table")
     
-    conn.commit()
-    conn.close()
+    db.commit()
+    db.close()
 
 def init_db():
     conn = get_db()
