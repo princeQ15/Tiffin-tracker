@@ -3,25 +3,14 @@ name: Python checks
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    
-    services:
-      sqlite:
-        image: sqlite
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "sqlite3 --version"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           
@@ -29,20 +18,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov
           
       - name: Lint with flake8
         run: |
-          pip install flake8
+          pip install flake8 black
+          # Stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
+          # Check code formatting with black
+          black --check .
           
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           FLASK_APP: app.py
           FLASK_ENV: testing
-          DATABASE_URL: sqlite:///test.db
+          DATABASE_URL: sqlite:///:memory:
         run: |
-          python -m pytest -v tests/
+          python -m pytest -v --cov=app --cov-report=term-missing tests/
           
       - name: Check code formatting
         run: |
