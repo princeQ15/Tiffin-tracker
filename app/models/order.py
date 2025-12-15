@@ -1,5 +1,25 @@
 from datetime import datetime
+from enum import Enum
 from app import db
+
+
+class OrderStatus(Enum):
+    PENDING = 'pending'
+    CONFIRMED = 'confirmed'
+    IN_PROGRESS = 'in_progress'
+    OUT_FOR_DELIVERY = 'out_for_delivery'
+    DELIVERED = 'delivered'
+    CANCELLED = 'cancelled'
+    REFUNDED = 'refunded'
+
+
+class PaymentStatus(Enum):
+    PENDING = 'pending'
+    COMPLETED = 'completed'
+    FAILED = 'failed'
+    REFUNDED = 'refunded'
+    PARTIALLY_REFUNDED = 'partially_refunded'
+    CANCELLED = 'cancelled'
 
 class Order(db.Model):
     """Order model for tiffin orders."""
@@ -7,7 +27,7 @@ class Order(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, confirmed, delivered, cancelled
+    status = db.Column(db.Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     delivery_address = db.Column(db.Text, nullable=False)
     delivery_date = db.Column(db.Date, nullable=False)
     delivery_time = db.Column(db.String(50), nullable=False)
@@ -30,7 +50,7 @@ class Order(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'status': self.status,
+            'status': self.status.value if self.status else None,
             'delivery_address': self.delivery_address,
             'delivery_date': self.delivery_date.isoformat() if self.delivery_date else None,
             'delivery_time': self.delivery_time,
@@ -48,6 +68,37 @@ class OrderItem(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     meal_id = db.Column(db.Integer, db.ForeignKey('meal.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
+
+
+class Payment(db.Model):
+    """Payment model for order payments."""
+    __tablename__ = 'payment'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
+    transaction_id = db.Column(db.String(100), unique=True, nullable=True)
+    payment_method = db.Column(db.String(50), nullable=False)  # credit_card, debit_card, upi, net_banking, etc.
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    order = db.relationship('Order', backref=db.backref('payments', lazy=True))
+    
+    def __repr__(self):
+        return f'<Payment {self.id} - {self.status} - {self.amount}>'
+    
+    def to_dict(self):
+        """Convert payment to dictionary."""
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'amount': self.amount,
+            'status': self.status.value if self.status else None,
+            'transaction_id': self.transaction_id,
+            'payment_method': self.payment_method,
+            'payment_date': self.payment_date.isoformat() if self.payment_date else None
+        }
     
     # Relationships
     meal = db.relationship('Meal')

@@ -1,0 +1,122 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2 class="display-4">{{ total_users }}</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('admin.users') }}" class="text-white">View Details</a>
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Orders</h5>
+                    <h2 class="display-4">{{ total_orders }}</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('admin.orders') }}" class="text-white">View Details</a>
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Meals</h5>
+                    <h2 class="display-4">{{ total_meals }}</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('admin.meals') }}" class="text-white">View Details</a>
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if order.status == 'delivered' else 'warning' }}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No recent orders</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No users found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

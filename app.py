@@ -1,103 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 import os
-import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from db_utils import get_db, close_db, query_db, get_user, get_user_by_username, create_user, get_orders, get_order, create_order, update_order_status, login_required, admin_required
+from app import create_app, db
+from config import Config
+from app.models import User, Order
 
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
+# Create application instance
+app = create_app(Config)
 
 # Make datetime available in templates
 @app.context_processor
 def inject_now():
     return {'now': datetime.now()}
-
-# Database connection management
-@app.before_request
-def before_request():
-    g.db = get_db()
-
-@app.teardown_appcontext
-def teardown_db(exception):
-    close_db(exception)
-
-def migrate_db():
-    """Update existing database schema"""
-    db = get_db()
-    cursor = db.cursor()
-    
-    # Check and update users table
-    cursor.execute("PRAGMA table_info(users)")
-    columns = [column[1] for column in cursor.fetchall()]
-    
-    if 'username' in columns and 'password' not in columns:
-        cursor.execute("ALTER TABLE users ADD COLUMN password TEXT")
-        cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
-        cursor.execute("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0")
-        cursor.execute("ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-        print("Added missing columns to users table")
-    
-    # Check and update orders table
-    cursor.execute("PRAGMA table_info(orders)")
-    order_columns = [column[1] for column in cursor.fetchall()]
-    
-    # Add all missing columns to orders table
-    required_columns = ['user_id', 'name', 'phone', 'address', 'meal', 'quantity', 'delivery_time', 'status', 'created_at']
-    for column in required_columns:
-        if column not in order_columns:
-            if column == 'user_id':
-                cursor.execute("ALTER TABLE orders ADD COLUMN user_id INTEGER")
-            elif column == 'status':
-                cursor.execute("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'Received'")
-            elif column == 'created_at':
-                cursor.execute("ALTER TABLE orders ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-            elif column == 'quantity':
-                cursor.execute("ALTER TABLE orders ADD COLUMN quantity INTEGER")
-            else:
-                cursor.execute(f"ALTER TABLE orders ADD COLUMN {column} TEXT")
-            print(f"Added {column} column to orders table")
-    
-    db.commit()
-    db.close()
-
-def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    # Create orders table if it doesn't exist
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            name TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            address TEXT NOT NULL,
-            meal TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
-            delivery_time TEXT NOT NULL,
-            status TEXT DEFAULT 'Received',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # Create users table if it doesn't exist
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            email TEXT UNIQUE,
-            is_admin BOOLEAN DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Commit changes and close the connection
-    conn.commit()
-    conn.close()
-    print("✅ Database initialized successfully")
 
 # Routes
 @app.route('/')
@@ -111,13 +26,27 @@ def register():
         password = request.form['password']
         email = request.form.get('email')
         
-        try:
-            create_user(username, password, email)
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            flash('Username or email already exists.', 'danger')
-            
+        # Check if user already exists
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.', 'danger')
+            return redirect(url_for('register'))
+        if email and User.query.filter_by(email=email).first():
+            flash('Email already registered.', 'danger')
+            return redirect(url_for('register'))
+        
+        # Create new user
+        user = User(
+            username=username,
+            email=email
+        )
+        user.set_password(password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('login'))
+    
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -126,18 +55,19 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        user = get_user_by_username(username)
+        user = User.query.filter_by(username=username).first()
         
-        if user is None or not check_password_hash(user['password'], password):
+        if user is None or not user.check_password(password):
             flash('Invalid username or password', 'danger')
             return redirect(url_for('login'))
         
         session.clear()
-        session['user_id'] = user['id']
-        session['is_admin'] = bool(user['is_admin'])
+        session['user_id'] = user.id
+        session['is_admin'] = user.is_admin
         
         # Update last login time
-        query_db('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user['id'],))
+        user.last_login = datetime.utcnow()
+        db.session.commit()
         
         flash(f'Welcome back, {username}!', 'success')
         return redirect(url_for('profile'))
@@ -153,21 +83,26 @@ def logout():
 @app.route('/profile')
 @login_required
 def profile():
-    user_orders = get_orders(session['user_id'])
+    user_orders = Order.query.filter_by(user_id=session['user_id']).all()
     return render_template('profile.html', orders=user_orders)
 
 @app.route('/order', methods=['GET', 'POST'])
 @login_required
 def place_order():
     if request.method == 'POST':
-        name = request.form['name']
-        phone = request.form['phone']
-        address = request.form['address']
-        meal = request.form['meal']
-        quantity = int(request.form['quantity'])
-        delivery_time = request.form['delivery_time']
+        order = Order(
+            user_id=session['user_id'],
+            name=request.form['name'],
+            phone=request.form['phone'],
+            address=request.form['address'],
+            meal=request.form['meal'],
+            quantity=int(request.form['quantity']),
+            delivery_time=request.form['delivery_time'],
+            status='Received'
+        )
         
-        create_order(session['user_id'], name, phone, address, meal, quantity, delivery_time)
+        db.session.add(order)
+        db.session.commit()
         
         flash('Order placed successfully!', 'success')
         return redirect(url_for('profile'))
@@ -177,33 +112,48 @@ def place_order():
 @app.route('/admin')
 @admin_required
 def admin():
-    orders = get_orders()
-    users = query_db('SELECT id, username, email, is_admin FROM users')
+    orders = Order.query.all()
+    users = User.query.all()
     return render_template('admin.html', orders=orders, users=users)
 
 @app.route('/admin/order/<int:order_id>/update', methods=['POST'])
 @admin_required
 def update_order(order_id):
-    status = request.form['status']
-    update_order_status(order_id, status)
+    order = Order.query.get_or_404(order_id)
+    order.status = request.form['status']
+    db.session.commit()
+    
     flash('Order status updated!', 'success')
     return redirect(url_for('admin'))
 
-if __name__ == '__main__':
-    # Initialize database if it doesn't exist
-    if not os.path.exists('tiffin_orders.db'):
-        try:
-            init_db()
-            print("✅ Database initialized successfully")
-        except Exception as e:
-            print(f"❌ Error initializing database: {e}")
+# Login required decorator
+def login_required(f):
+    from functools import wraps
     
-    # Always run migrations to ensure schema is up to date
-    try:
-        migrate_db()
-        print("✅ Database migration completed")
-    except Exception as e:
-        print(f"⚠️ Database migration completed with warnings: {e}")
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'danger')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Admin required decorator
+def admin_required(f):
+    from functools import wraps
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or not session.get('is_admin'):
+            flash('You do not have permission to access this page.', 'danger')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+if __name__ == '__main__':
+    with app.app_context():
+        # Create database tables if they don't exist
+        db.create_all()
     
     # Run the app
     try:

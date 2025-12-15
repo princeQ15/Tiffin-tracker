@@ -1,0 +1,11 @@
+{% extends "errors/base.html" %}
+
+{% block title %}400 - CSRF Error{% endblock %}
+
+{% block content %}
+    <div class="error-code">400</div>
+    <h1 class="error-message">CSRF Token Error</h1>
+    <p class="lead">The form submission could not be processed.</p>
+    <p>This could be because your session has expired or the form was submitted from another tab.</p>
+    <p>Please refresh the page and try again.</p>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Orders - Admin Panel{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Orders</h2>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-funnel"></i> Filter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">All Orders</a></li>
+                <li><a class="dropdown-item" href="#">Pending</a></li>
+                <li><a class="dropdown-item" href="#">Processing</a></li>
+                <li><a class="dropdown-item" href="#">Completed</a></li>
+                <li><a class="dropdown-item" href="#">Cancelled</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders.items %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.user.username }}</td>
+                            <td>{{ order.created_at.strftime('%b %d, %Y') }}</td>
+                            <td>{{ order.items|length }} items</td>
+                            <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                            <td>
+                                <span class="badge bg-{{ 
+                                    'warning' if order.status == 'pending' else
+                                    'info' if order.status == 'processing' else
+                                    'success' if order.status == 'delivered' else
+                                    'danger' if order.status == 'cancelled' else
+                                    'secondary'
+                                }}">
+                                    {{ order.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="#" class="btn btn-sm btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-success" title="Update Status">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No orders found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if orders.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if orders.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.orders', page=orders.prev_num) }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in orders.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if orders.page == page_num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.orders', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if orders.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.orders', page=orders.next_num) }}">Next</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "errors/base.html" %}
+
+{% block title %}429 - Too Many Requests{% endblock %}
+
+{% block content %}
+    <div class="error-code">429</div>
+    <h1 class="error-message">Too Many Requests</h1>
+    <p class="lead">You've made too many requests to our servers.</p>
+    <p>Please wait a few minutes before trying again.</p>
+{% endblock %}

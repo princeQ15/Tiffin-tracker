@@ -1,7 +1,25 @@
-from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+import jwt
+from flask import current_app
 from flask_login import UserMixin
-from app import db, login_manager
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login_manager, bcrypt
+
+# Association table for many-to-many relationship between users and roles
+user_roles = db.Table('user_roles',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('role_id', db.Integer, db.ForeignKey('roles.id'), primary_key=True)
+)
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+    users = db.relationship('User', secondary=user_roles, back_populates='roles')
+    
+    def __repr__(self):
+        return f'<Role {self.name}>'
 
 class User(UserMixin, db.Model):
     """User account model."""
@@ -20,6 +38,7 @@ class User(UserMixin, db.Model):
     
     # Relationships
     orders = db.relationship('Order', backref='customer', lazy=True)
+    roles = db.relationship('Role', secondary=user_roles, back_populates='users')
     
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -29,11 +48,36 @@ class User(UserMixin, db.Model):
     
     def set_password(self, password):
         """Create hashed password."""
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     
     def check_password(self, password):
         """Check hashed password."""
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
+    
+    def get_reset_token(self, expires_sec=1800):
+        """Generate a password reset token."""
+        reset_token = jwt.encode(
+            {
+                'user_id': self.id,
+                'exp': datetime.utcnow() + timedelta(seconds=expires_sec)
+            },
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return reset_token
+
+    @staticmethod
+    def verify_reset_token(token):
+        """Verify the password reset token."""
+        try:
+            user_id = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
     
     def get_full_name(self):
         """Return the full name of the user."""
