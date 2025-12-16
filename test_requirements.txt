@@ -1,0 +1,3 @@
+flask-talisman
+flask-seasurf
+flask-session
