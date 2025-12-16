@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Tiffin Tracker{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-dark mb-4">Delicious Meals,<br>Delivered Fresh</h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Track your tiffin orders and never miss a meal with our easy-to-use platform</p>
+    </div>
+
+    {% if not session.get('logged_in') %}
+    <!-- Guest View -->
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 mb-12">
+        <div class="md:flex items-center">
+            <div class="md:w-1/2 mb-6 md:mb-0 md:pr-8">
+                <h2 class="text-2xl font-bold text-dark mb-4">Ready to order?</h2>
+                <p class="text-gray-600 mb-6">Join thousands of satisfied customers who enjoy fresh, homemade meals delivered to their doorstep.</p>
+                <div class="space-y-3">
+                    <a href="{{ url_for('register') }}" class="btn-primary w-full text-center block">
+                        Create Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn-secondary w-full text-center block">
+                        Sign In
+                    </a>
+                </div>
+        </div>
+    </div>
+
+    <!-- Weekly Menu -->
+    <div id="menu" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">This Week's Menu</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Day</th>
+                            <th class="px-6 py-4 text-left">Lunch</th>
+                            <th class="px-6 py-4 text-left">Dinner</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 font-medium">Monday</td>
+                            <td class="px-6 py-4">Dal, Rice, Roti, Sabzi, Salad</td>
+                            <td class="px-6 py-4">Kadhi Chawal, Roti, Salad</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="px-6 py-4 font-medium">Tuesday</td>
+                            <td class="px-6 py-4">Rajma, Rice, Roti, Salad</td>
+                            <td class="px-6 py-4">Chole, Rice, Roti, Salad</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-medium">Wednesday</td>
+                            <td class="px-6 py-4">Dal Makhani, Jeera Rice, Roti, Salad</td>
+                            <td class="px-6 py-4">Vegetable Pulao, Raita, Papad</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            <td class="px-6 py-4 font-medium">Thursday</td>
+                            <td class="px-6 py-4">Chana Masala, Rice, Roti, Salad</td>
+                            <td class="px-6 py-4">Dal Fry, Jeera Rice, Roti, Salad</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 font-medium">Friday</td>
+                            <td class="px-6 py-4">Mix Veg, Roti, Rice, Salad</td>
+                            <td class="px-6 py-4">Pav Bhaji, Butter Milk</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Form -->
+    <div id="order" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <div class="bg-white rounded-xl shadow-md p-8">
+                <h2 class="text-3xl font-bold text-center mb-8">Place Your Order</h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="mb-4 p-4 rounded-md {% if category == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form action="/order" method="POST" class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Your Name</label>
+                        <input type="text" name="name" required 
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" name="phone" required 
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Delivery Address</label>
+                        <textarea name="address" rows="3" required 
+                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Meal Type</label>
+                            <select name="meal" required 
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select a meal</option>
+                                <option value="Veg Thali">Veg Thali</option>
+                                <option value="Non-Veg Thali">Non-Veg Thali</option>
+                                <option value="Special Thali">Special Thali</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Quantity</label>
+                            <input type="number" name="quantity" min="1" max="10" value="1" required 
+                                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Delivery Time</label>
+                        <select name="delivery_time" required 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select delivery time</option>
+                            <option value="12:30 PM - 1:30 PM">12:30 PM - 1:30 PM</option>
+                            <option value="1:30 PM - 2:30 PM">1:30 PM - 2:30 PM</option>
+                            <option value="7:30 PM - 8:30 PM">7:30 PM - 8:30 PM</option>
+                        </select>
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    <div class="relative">
+                        <input type="number" name="quantity" min="1" value="1" class="form-input">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fas fa-hashtag text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit" class="btn-primary w-full">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Place Order
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Order Summary -->
+            <div class="mt-6 pt-6 border-t border-gray-100">
+                <h3 class="font-medium text-gray-900 mb-3">Today's Menu</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Lunch Special</span>
+                        <span class="font-medium">₹120</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Dinner Special</span>
+                        <span class="font-medium">₹150</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex justify-between font-medium text-dark">
+                        <span>Total (1 meal)</span>
+                        <span>₹120</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Tracking -->
+    <div class="card p-6 mb-8">
+        <h2 class="text-xl font-bold text-dark mb-6">Track Your Order</h2>
+        {% if orders %}
+            {% for order in orders %}
+            <div class="mb-8 border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-medium text-gray-900">Order #{{ order.id }}</h3>
+                        <p class="text-sm text-gray-500">{{ order.meal }} ({{ order.quantity }}x)</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full {% if order.status == 'delivered' %}bg-green-100 text-green-800{% elif order.status == 'preparing' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ order.status|title }}
+                    </span>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between">
+                        {% set progress_steps = [
+                            ('Order Placed', 'fas fa-utensils', order.status == 'placed'),
+                            ('Preparing', 'fas fa-utensils', order.status == 'preparing'),
+                            ('On the way', 'fas fa-motorcycle', order.status == 'on the way'),
+                            ('Delivered', 'fas fa-home', order.status == 'delivered')
+                        ] %}
+                        
+                        {% for step, icon, is_current in progress_steps %}
+                            <div class="flex flex-col items-center">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center mb-1
+                                    {% if loop.index0 <= progress_steps|selectattr('2')|list|length %}
+                                        bg-primary text-white
+                                    {% else %}
+                                        bg-gray-100 text-gray-400
+                                    {% endif %}">
+                                    <i class="{{ icon }}"></i>
+                                </div>
+                                <span class="text-xs font-medium {% if loop.index0 <= progress_steps|selectattr('2')|list|length %}text-primary{% else %}text-gray-500{% endif %}">
+                                    {{ step }}
+                                </span>
+                            </div>
+                            {% if not loop.last %}
+                            <div class="h-1 flex-1 mx-2 bg-gray-200">
+                                <div class="h-full bg-primary {% if loop.index0 < progress_steps|selectattr('2')|list|length %}w-full{% else %}w-0{% endif %}"></div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Delivery Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-map-marker-alt text-blue-500 text-xl mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-blue-800">Delivery Address</h3>
+                                <p class="mt-1 text-sm text-blue-700">{{ order.delivery_address|truncate(40) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-clock text-green-500 text-xl mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-green-800">Delivery Time</h3>
+                                <p class="mt-1 text-sm text-green-700">
+                                    {{ order.delivery_time }}<br>
+                                    <span class="text-xs">Estimated: {{ order.estimated_delivery }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-8">
+                <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-utensils text-2xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No active orders</h3>
+                <p class="text-gray-500">Place an order to track its status here</p>
+            </div>
+        {% endif %}
+    </div>
+        </div>
+    </div>
+    
+    <!-- Weekly Schedule -->
+    <div class="card p-6">
+        <h2 class="text-xl font-bold text-dark mb-6">This Week's Menu</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Day</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lunch</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dinner</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Monday</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Dal, Rice, Roti, Sabzi, Salad</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Kadhi Chawal, Roti, Salad</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Tuesday</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Rajma, Rice, Roti, Salad</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Chole, Rice, Roti, Salad</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Wednesday</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Dal Makhani, Jeera Rice, Roti, Salad</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Vegetable Pulao, Raita, Papad</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Thursday</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Chana Masala, Rice, Roti, Salad</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Dal Fry, Jeera Rice, Roti, Salad</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Friday</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Mix Veg, Roti, Rice, Salad</td>
+                        <td class="px-6 py-4 whitespace-nowrap">Pav Bhaji, Butter Milk</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

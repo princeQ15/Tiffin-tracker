@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  test:
+    build: .
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: testing
+      DATABASE_URL: sqlite:///:memory:
+    volumes:
+      - .:/app
+    command: ["pytest", "-v"]
