@@ -1,0 +1,36 @@
+[
+  {
+    "name": "Bali, Indonesia",
+    "climate": "tropical",
+    "budget": "medium",
+    "activities": [
+      "beach",
+      "surfing",
+      "yoga",
+      "culture"
+    ],
+    "description": "A tropical paradise with beautiful beaches and rich culture."
+  },
+  {
+    "name": "Swiss Alps, Switzerland",
+    "climate": "cold",
+    "budget": "high",
+    "activities": [
+      "skiing",
+      "hiking",
+      "sightseeing"
+    ],
+    "description": "Breathtaking mountain views and world-class ski resorts."
+  },
+  {
+    "name": "Cape Town, South Africa",
+    "climate": "warm",
+    "budget": "medium",
+    "activities": [
+      "safari",
+      "hiking",
+      "wine tasting"
+    ],
+    "description": "Stunning landscapes, wildlife, and world-famous vineyards."
+  }
+]
