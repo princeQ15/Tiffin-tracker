@@ -1,5 +1,0 @@
-PyPDF2
-pandas
-openpyxl
-transformers
-torch

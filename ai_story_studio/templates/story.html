@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Read your AI-generated story">
+    <title>Your Story - AI Story Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/story.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your Custom Story</h1>
+            <p class="story-intro" aria-hidden="true">Here is your story:</p>
+        </header>
+        
+        <main class="story-content">
+            {% if story_text and story_text.strip() %}
+                {% for paragraph in story_text.split('\n\n') %}
+                    {% if paragraph.strip() %}
+                        <p>{{ paragraph|safe if paragraph else '<br>' }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="error-message">
+                    <p>No story content available. Please go back and try again.</p>
+                    <a href="/" class="btn btn-another">Back to Home</a>
+                </div>
+            {% endif %}
+        </main>
+        
+        <footer class="button-group" role="navigation">
+            <button onclick="window.print()" class="btn btn-print" aria-label="Print this story">
+                Print this Story
+            </button>
+            <a href="/" class="btn btn-another">
+                Create Another Story
+            </a>
+        </footer>
+    </div>
+    
+    <script>
+        // Add print functionality with better error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const printButton = document.querySelector('.btn-print');
+            if (printButton) {
+                printButton.addEventListener('click', function() {
+                    try {
+                        window.print();
+                    } catch (error) {
+                        console.error('Print failed:', error);
+                        alert('Printing failed. Please try again or use your browser\'s print function (Ctrl+P or Cmd+P).');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

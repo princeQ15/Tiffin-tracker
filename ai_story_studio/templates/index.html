@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Story Studio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .error {
+            background-color: #fde8e8;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            border-left: 4px solid #c53030;
+        }
+        .form-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Story</h1>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST" action="/generate">
+            <div class="form-group">
+                <label for="title">Story Title</label>
+                <input type="text" id="title" name="title" required
+                       value="{{ request.form.get('title', '') }}"
+                       placeholder="Enter a creative title for your story">
+                <div class="form-note">Example: The Last Dragon's Secret</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="main_character">Main Character</label>
+                <input type="text" id="main_character" name="main_character" required
+                       value="{{ request.form.get('main_character', '') }}"
+                       placeholder="Enter the main character's name">
+                <div class="form-note">Example: Aria, the young mage</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="setting">Story Setting</label>
+                <input type="text" id="setting" name="setting" required
+                       value="{{ request.form.get('setting', '') }}"
+                       placeholder="Where does your story take place?">
+                <div class="form-note">Example: The mystical forest of Eldoria</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="topic">Main Theme/Topic</label>
+                <input type="text" id="topic" name="topic" required
+                       value="{{ request.form.get('topic', '') }}"
+                       placeholder="What is your story mainly about?">
+                <div class="form-note">Example: A hidden treasure, a magical spell, a secret prophecy</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="moral">Moral of the Story</label>
+                <input type="text" id="moral" name="moral" required
+                       value="{{ request.form.get('moral', '') }}"
+                       placeholder="What lesson does your story teach?">
+                <div class="form-note">Example: True friendship overcomes all obstacles</div>
+            </div>
+            
+            <button type="submit">Create My Story</button>
+        </form>
+    </div>
+</body>
+</html>

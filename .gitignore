@@ -1,53 +1,63 @@
 # Python
 __pycache__/
 *.py[cod]
-*.db
-.env
-.venv/
+*$py.class
+*.so
+.Python
+env/
 venv/
-*.log
-*.pyc
-*.pyo
-*.pyd
-*.py.class
-.python-version
-.pytest_cache/
-.mypy_cache/
+venv311/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+flask_session/
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
 .vscode/
 .idea/
-*.pdf
-*.log
-*.sql
+*.swp
+*.swo
+*~
 
-# Project specific exclusions (don't ignore the entire directories)
-/DSA Practice/__pycache__/
-/DSA Practice/*.pyc
-/Tiffin Tracker project/__pycache__/
-/Tiffin Tracker project/*.pyc
-/Python_Practice/__pycache__/
-/Python_Practice/*.pyc
-/SYBSC_CS/__pycache__/
-/SYBSC_CS/*.pyc
-/leetcodeCompany_wise_practice/__pycache__/
-/leetcodeCompany_wise_practice/*.pyc
-/Python/__pycache__/
-/Python/*.pyc
+# OS
+.DS_Store
+Thumbs.db
 
-# Node.js dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Environment variables
+# Env files
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Debug logs
-npm-debug.log*
+# Logs
+*.log
+
+# Node.js
+node_modules/
+
+# Build outputs
+dist/
+build/
 yarn-debug.log*
 yarn-error.log*
 
