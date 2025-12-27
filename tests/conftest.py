@@ -11,14 +11,15 @@ from typing import Generator, Dict, Any
 import pytest
 from flask import Flask, Response
 from flask.testing import FlaskClient, FlaskCliRunner
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user
 
 # Add the project root to the Python path to enable absolute imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Initialize extensions
-db = SQLAlchemy()
+# Import the db instance from the app
+from app import db
+
+# Initialize login manager
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
@@ -56,7 +57,9 @@ def create_test_app(config: Dict[str, Any] = None) -> Flask:
     login_manager.init_app(app)
     
     # Register blueprints (if any)
-    from app.routes import auth_bp, main_bp, admin_bp
+    from app.routes.auth import bp as auth_bp
+    from app.routes.main import bp as main_bp
+    from app.routes.admin import bp as admin_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)

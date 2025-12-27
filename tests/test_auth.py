@@ -11,7 +11,8 @@ from flask import Flask, Response
 from flask.testing import FlaskClient
 from werkzeug.datastructures import ImmutableMultiDict
 
-from app.models import User, db
+from app.models import User
+from app import db
 
 
 def test_user_registration_success(client: FlaskClient) -> None:

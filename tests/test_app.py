@@ -14,7 +14,8 @@ import pytest
 from flask import Flask, Response
 from flask.testing import FlaskClient
 
-from app.models import User, Order, db
+from app.models import User, Order
+from app import db
 
 
 def test_app_creation(app: Flask) -> None:

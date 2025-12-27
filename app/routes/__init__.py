@@ -1,1 +1,7 @@
-# This file makes the routes directory a Python package
+# Import blueprints
+from .auth import bp as auth_bp
+from .main import bp as main_bp
+from .admin import bp as admin_bp
+
+# Make blueprints available when importing from app.routes
+__all__ = ['auth_bp', 'main_bp', 'admin_bp']
